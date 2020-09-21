@@ -1,3 +1,4 @@
+// forked from react-tiny-virtual-list 
 import { ALIGNMENT } from "./consts";
 
 export type ItemSizeGetter = (index: number) => number;
@@ -179,6 +180,7 @@ export default class SizeAndPositionManager {
       return {};
     }
 
+    // max possible offset for current visible range (the container size)
     const maxOffset = offset + containerSize;
     let start = this.findNearestItem(offset);
 
@@ -187,13 +189,14 @@ export default class SizeAndPositionManager {
     }
 
     const datum = this.getSizeAndPositionForIndex(start);
-    offset = datum.offset + datum.size;
+    // accumulated offset for looping
+    let currentOffset = datum.offset + datum.size;
 
     let stop = start;
 
-    while (offset < maxOffset && stop < this.itemCount - 1) {
+    while (currentOffset < maxOffset && stop < this.itemCount - 1) {
       stop++;
-      offset += this.getSizeAndPositionForIndex(stop).size;
+      currentOffset += this.getSizeAndPositionForIndex(stop).size;
     }
 
     if (overscanCount) {

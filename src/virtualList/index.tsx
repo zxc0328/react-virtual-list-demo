@@ -13,6 +13,7 @@ interface Props {
   overscanCount?: number;
   className?: string;
   itemSize: number;
+  estimatedItemSize?: number;
   renderListItem: (
     data: any,
     index: number,
@@ -63,6 +64,7 @@ const VirtualList: React.FC<Props> = (props) => {
     scrollDirection = DIRECTION.VERTICAL,
     className,
     renderCellWarpper,
+    estimatedItemSize = 50,
   } = props;
 
   const listEl = useRef<HTMLDivElement>(null);
@@ -70,12 +72,13 @@ const VirtualList: React.FC<Props> = (props) => {
     new SizeAndPositionManager({
       itemCount: dataSource.length,
       itemSizeGetter: () => itemSize,
-      estimatedItemSize: 50,
+      estimatedItemSize,
     })
   );
 
   const [offset, setOffset] = useState(0);
 
+  // add scroll event handler for container
   useEffect(() => {
     const ele = listEl.current;
     const onScroll = () => {
@@ -105,6 +108,18 @@ const VirtualList: React.FC<Props> = (props) => {
     };
   }, []);
 
+  // updateConfig when data change
+  useEffect(() => {
+    if (dataSource && sizeAndPositionManager) {
+      sizeAndPositionManager.current.updateConfig({
+        itemCount: dataSource.length,
+        itemSizeGetter: () => itemSize,
+        estimatedItemSize,
+      });
+    }
+  }, [dataSource, itemSize, estimatedItemSize]);
+
+  // get items for current visible range
   const items: React.ReactNode[] = [];
   const { start, stop } = sizeAndPositionManager.current.getVisibleRange({
     containerSize: props[SIZE_PROP[scrollDirection]] || 0,
